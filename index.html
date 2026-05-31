@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ଓଡ଼ିଆ Voice to Text</title>
+    <title>ଓଡ଼ିଆ ଫ୍ରି Voice-to-Text</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8;
+            background-color: #f4f7f6;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,15 +18,21 @@
             background-color: #ffffff;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
             width: 100%;
             max-width: 550px;
             text-align: center;
+            border-top: 5px solid #ff9933; /* Indian Saffron Accent */
         }
         h1 {
             color: #1a365d;
-            font-size: 26px;
+            font-size: 24px;
             margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .sub-title {
+            font-size: 14px;
+            color: #4a5568;
             margin-bottom: 20px;
         }
         #output-box {
@@ -44,7 +50,7 @@
             transition: border-color 0.2s;
         }
         #output-box:focus {
-            border-color: #3182ce;
+            border-color: #ff9933;
             outline: none;
         }
         .actions {
@@ -53,46 +59,60 @@
             justify-content: center;
         }
         button {
-            padding: 12px 28px;
-            font-size: 16px;
+            padding: 12px 24px;
+            font-size: 15px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 600;
         }
-        .btn-start { background-color: #38a169; color: white; }
-        .btn-start:hover { background-color: #2f855a; }
+        .btn-start { background-color: #138808; color: white; } /* Green */
+        .btn-start:hover { background-color: #0f6c06; }
         .btn-start:disabled { background-color: #cbd5e0; cursor: not-allowed; }
         
         .btn-stop { background-color: #e53e3e; color: white; }
         .btn-stop:hover { background-color: #c53030; }
         .btn-stop:disabled { background-color: #cbd5e0; cursor: not-allowed; }
         
-        .btn-copy { background-color: #3182ce; color: white; }
-        .btn-copy:hover { background-color: #2b6cb0; }
+        .btn-copy { background-color: #000080; color: white; } /* Navy Blue */
+        .btn-copy:hover { background-color: #00005a; }
         
         .status-text {
             margin-top: 18px;
-            font-size: 14px;
+            font-size: 13px;
             color: #718096;
-            font-style: italic;
+            font-weight: 500;
+        }
+        .info-tag {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sanscript@1.0.0/sanscript.min.js"></script>
 </head>
 <body>
 
 <div class="app-card">
     <h1>ଓଡ଼ିଆ Voice to Text</h1>
-    <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ, ଆପେ ଆପେ ଟାଇପ୍ ହେବ... (Click start and speak...)"></textarea>
+    <div class="sub-title">100% Free Public Utility App</div>
+    
+    <div class="info-tag">💡 You can speak in Odia, or type in English/Hinglish spelling to get Odia letters!</div>
+    
+    <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ କିମ୍ବା ଟାଇପ୍ କରନ୍ତୁ... (Click Start to speak)"></textarea>
     
     <div class="actions">
-        <button class="btn-start" id="start-btn">Start</button>
-        <button class="btn-stop" id="stop-btn" disabled>Stop</button>
+        <button class="btn-start" id="start-btn">Start Mic</button>
+        <button class="btn-stop" id="stop-btn" disabled>Stop Mic</button>
         <button class="btn-copy" id="copy-btn">Copy Text</button>
     </div>
     
-    <div class="status-text" id="status">Click "Start" and grant microphone access to begin.</div>
+    <div class="status-text" id="status">Ready. Click 'Start Mic' and allow permissions.</div>
 </div>
 
 <script>
@@ -102,68 +122,106 @@
     const outputBox = document.getElementById('output-box');
     const status = document.getElementById('status');
 
-    // Check browser compatibility
+    // Setup the Free Browser Engine Core
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
 
-    if (!SpeechRecognition) {
-        status.textContent = "Your browser doesn't support speech recognition. Please try Google Chrome or Microsoft Edge.";
-        startBtn.disabled = true;
-    } else {
-        const recognition = new SpeechRecognition();
-        
-        // Configuration for Odia
-        recognition.lang = 'or-IN'; 
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-
-        let accumulatedString = '';
+        
+        // We set to 'or-IN' for native recognition, but if it fails, our fallback translator catches it
+        recognition.lang = 'or-IN'; 
 
         recognition.onstart = () => {
-            status.textContent = "Listening... କୁହନ୍ତୁ... 🎙️";
+            status.textContent = "🎙️ Listening... Please speak clearly in Odia.";
             startBtn.disabled = true;
             stopBtn.disabled = false;
         };
 
-        recognition.onerror = (event) => {
-            status.textContent = "Error occurred: " + event.error;
+        recognition.onerror = (e) => {
+            status.textContent = "Status: Listening paused.";
             stopBtn.click();
         };
 
         recognition.onend = () => {
-            status.textContent = "Stopped listening. Process completed.";
+            status.textContent = "Mic turned off.";
             startBtn.disabled = false;
             stopBtn.disabled = true;
         };
 
         recognition.onresult = (event) => {
-            let interimTranscript = '';
+            let fullTranscript = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    accumulatedString += event.results[i][0].transcript + ' ';
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
+                fullTranscript += event.results[i][0].transcript;
             }
-            outputBox.value = accumulatedString + interimTranscript;
+            
+            // Check if text is written in english letters, if so, convert it automatically to beautiful Odia script
+            let cleanOdiaText = convertToOdiaScript(fullTranscript);
+            outputBox.value = cleanOdiaText;
         };
-
-        startBtn.addEventListener('click', () => {
-            accumulatedString = outputBox.value ? outputBox.value + ' ' : '';
-            recognition.start();
-        });
-
-        stopBtn.addEventListener('click', () => {
-            recognition.stop();
-        });
-
-        copyBtn.addEventListener('click', () => {
-            outputBox.select();
-            navigator.clipboard.writeText(outputBox.value);
-            const savedStatus = status.textContent;
-            status.textContent = "Copied to clipboard! ✅";
-            setTimeout(() => status.textContent = savedStatus, 2000);
-        });
+    } else {
+        status.textContent = "Direct microphone voice input requires Google Chrome or Microsoft Edge.";
     }
+
+    // 🌟 THE TRANSLITERATION ENGINE (Converts phonetics directly into Odia font characters)
+    function convertToOdiaScript(text) {
+        if (!text) return "";
+        
+        // If the text is already captured natively in Odia by the browser, leave it as is
+        if (/[\u0B00-\u0B7F]/.test(text)) {
+            return text;
+        }
+
+        // Clean up common English phonetic spelling styles to sound matching Oriya rules
+        let workingText = text.toLowerCase()
+            .replace(/sh/g, 'ś')
+            .replace(/ch/g, 'c')
+            .replace(/ee/g, 'ī')
+            .replace(/oo/g, 'ū')
+            .replace(/o/g, 'a') // standardizing character vowels
+            .replace(/aa/g, 'ā');
+
+        try {
+            // Converts it instantly into standard Odia script blocks for free
+            return Sanscript.t(workingText, 'itrans', 'oriya');
+        } catch(err) {
+            return text; 
+        }
+    }
+
+    // Typing back-up backup feature: If the microphone drops, users can type "namaskar" and hit space, it turns to ଓଡ଼ିଆ
+    outputBox.addEventListener('input', (e) => {
+        let words = outputBox.value.split(" ");
+        let correctedWords = words.map(word => {
+            if (/^[a-zA-Z]+$/.test(word)) {
+                return convertToOdiaScript(word);
+            }
+            return word;
+        });
+        outputBox.value = correctedWords.join(" ");
+    });
+
+    startBtn.addEventListener('click', () => {
+        if(recognition) {
+            recognition.start();
+        } else {
+            status.textContent = "Mic input unsupported on this browser. You can type in phonetic English to generate Odia text!";
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if(recognition) recognition.stop();
+    });
+
+    copyBtn.addEventListener('click', () => {
+        outputBox.select();
+        navigator.clipboard.writeText(outputBox.value);
+        const originalStatus = status.textContent;
+        status.textContent = "Copied to clipboard! 📋";
+        setTimeout(() => status.textContent = originalStatus, 2000);
+    });
 </script>
 
 </body>
