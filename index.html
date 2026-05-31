@@ -1,30 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="or">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice to Text Engine</title>
+    <title>Odia Voice Engine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <main class="app-container">
         <header class="app-header">
-            <h1 class="app-title">Speech to Text Engine</h1>
-            <p class="app-subtitle">Real-time voice recognition & phrase correction</p>
+            <div class="brand-badge">ODIA VOICE v2.0</div>
+            <h1 class="app-title">ଓଡ଼ିଆ Speech Engine</h1>
+            <p class="app-subtitle">Real-time modular voice-to-text pipeline</p>
         </header>
 
         <section class="display-workspace">
-            <div id="outputCanvas" class="output-canvas"></div>
+            <div id="outputCanvas" class="output-canvas" tabIndex="0" role="textbox" aria-multiline="true"></div>
+            <div id="statusIndicator" class="status-indicator">SYSTEM IDLE</div>
         </section>
         
         <footer class="controls-workspace">
             <button id="toggleRecordBtn" class="btn btn-primary" data-state="idle">
-                <span class="btn-icon"></span>
-                <span class="btn-text">Start Listening</span>
+                <div class="pulse-ring"></div>
+                <span class="btn-text">Listen</span>
             </button>
-            <button id="clearCanvasBtn" class="btn btn-secondary">
-                Clear Text
+            <button id="copyTextBtn" class="btn btn-secondary">
+                Copy
+            </button>
+            <button id="clearCanvasBtn" class="btn btn-danger">
+                Clear
             </button>
         </footer>
     </main>
