@@ -1,4 +1,4 @@
-import { SpeechEngine } from './engine.js';
+import { GroqSpeechEngine } from './engine.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const outputCanvas = document.getElementById('outputCanvas');
@@ -7,70 +7,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearCanvasBtn = document.getElementById('clearCanvasBtn');
     const copyTextBtn = document.getElementById('copyTextBtn');
     const statusIndicator = document.getElementById('statusIndicator');
+    
+    const configModal = document.getElementById('configModal');
+    const groqApiKeyInput = document.getElementById('groqApiKey');
+    const saveKeyBtn = document.getElementById('saveKeyBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
 
-    let engine;
+    const engine = new GroqSpeechEngine();
 
-    try {
-        engine = new SpeechEngine();
-    } catch (error) {
-        outputCanvas.innerHTML = `<span style="color: var(--accent-danger); font-size: 0.95rem;">${error.message}</span>`;
-        toggleRecordBtn.disabled = true;
-        return;
+    const savedKey = localStorage.getItem('groq_app_key');
+    if (!savedKey) {
+        configModal.classList.add('active');
+    } else {
+        groqApiKeyInput.value = savedKey;
     }
 
-    // Interactive Textbox Focus Hook: Clicking/tapping canvas instantly drops focus natively
-    outputCanvas.addEventListener('click', () => {
-        outputCanvas.focus();
+    saveKeyBtn.addEventListener('click', () => {
+        const inputKey = groqApiKeyInput.value.trim();
+        if (!inputKey) {
+            alert("Please enter a valid Groq API Key.");
+            return;
+        }
+        localStorage.setItem('groq_app_key', inputKey);
+        configModal.classList.remove('active');
     });
 
-    const handleSpeechResults = ({ final, interim }) => {
-        outputCanvas.innerHTML = `<span>${final}</span><span style="color: var(--text-interim);">${interim}</span>`;
-        outputCanvas.scrollTop = outputCanvas.scrollHeight;
-    };
+    settingsBtn.addEventListener('click', () => {
+        configModal.classList.add('active');
+        groqApiKeyInput.focus();
+    });
 
-    const handleSpeechDisconnections = () => {
-        toggleRecordBtn.setAttribute('data-state', 'idle');
-        btnText.textContent = "Listen";
-        statusIndicator.textContent = "SYSTEM IDLE";
-        statusIndicator.style.color = "var(--text-muted)";
-    };
+    outputCanvas.addEventListener('click', () => outputCanvas.focus());
 
-    toggleRecordBtn.addEventListener('click', () => {
-        const currentState = toggleRecordBtn.getAttribute('data-state');
+    toggleRecordBtn.addEventListener('click', async () => {
+        const apiKey = localStorage.getItem('groq_app_key');
+        if (!apiKey) {
+            configModal.classList.add('active');
+            return;
+        }
 
-        if (currentState === 'idle') {
-            toggleRecordBtn.setAttribute('data-state', 'listening');
-            btnText.textContent = "Stop";
-            statusIndicator.textContent = "LIVE CAPTURE (OR-IN)";
-            statusIndicator.style.color = "var(--accent-primary)";
-            engine.start(handleSpeechResults, handleSpeechDisconnections);
+        if (!engine.isRecording) {
+            try {
+                await engine.startRecording();
+                toggleRecordBtn.setAttribute('data-state', 'listening');
+                btnText.textContent = "Stop";
+                statusIndicator.textContent = "RECORDING (OR-IN)...";
+                statusIndicator.style.color = "var(--accent-danger)";
+            } catch (err) {
+                outputCanvas.innerHTML = `<span style="color: var(--accent-danger);">Mic Access Error: ${err.message}</span>`;
+            }
         } else {
-            engine.stop();
-            handleSpeechDisconnections();
+            statusIndicator.textContent = "PROCESSING LPU...";
+            statusIndicator.style.color = "var(--accent-cyan)";
+            btnText.textContent = "Processing...";
+            toggleRecordBtn.disabled = true;
+
+            try {
+                const odiaText = await engine.stopRecording(apiKey);
+                outputCanvas.innerHTML += `<span>${odiaText} </span>`;
+                outputCanvas.scrollTop = outputCanvas.scrollHeight;
+            } catch (err) {
+                if(err.message.includes("API key") || err.message.includes("Unauthorized")) {
+                    alert("Invalid API key. Please check your config parameters.");
+                    configModal.classList.add('active');
+                } else {
+                    outputCanvas.innerHTML += `<br><span style="color: var(--accent-danger);">Groq Error: ${err.message}</span>`;
+                }
+            } finally {
+                toggleRecordBtn.disabled = false;
+                toggleRecordBtn.setAttribute('data-state', 'idle');
+                btnText.textContent = "Listen";
+                statusIndicator.textContent = "SYSTEM READY";
+                statusIndicator.style.color = "var(--text-muted)";
+            }
         }
     });
 
-    // Native Mobile Clipboard Integration Layer
     copyTextBtn.addEventListener('click', async () => {
         const textToCopy = outputCanvas.innerText;
         if (!textToCopy) return;
-
         try {
             await navigator.clipboard.writeText(textToCopy);
             const originalText = copyTextBtn.textContent;
-            copyTextBtn.textContent = "Copied!";
-            copyTextBtn.style.borderColor = "var(--accent-primary)";
-            setTimeout(() => {
-                copyTextBtn.textContent = originalText;
-                copyTextBtn.style.borderColor = "rgba(255, 255, 255, 0.08)";
-            }, 1500);
+            copyTextBtn.textContent = "Copied";
+            setTimeout(() => copyTextBtn.textContent = originalText, 1500);
         } catch (err) {
-            console.error("Clipboard drop trace fault:", err);
+            console.error(err);
         }
     });
 
     clearCanvasBtn.addEventListener('click', () => {
-        engine.clear();
         outputCanvas.innerHTML = '';
     });
 });
