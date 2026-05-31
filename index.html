@@ -3,294 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ଓଡ଼ିଆ Voice-to-Text (Odianglish Mode)</title>
+    <title>ଓଡ଼ିଆ Voice-to-Text Pro</title>
     <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --accent: #f97316;
+            --accent-hover: #ea580c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .app-card {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+
+        .container {
+            background-color: var(--bg-card);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 550px;
-            text-align: center;
-            border-top: 5px solid #ff9933;
+            max-width: 650px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
         }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #f97316, #ef4444);
+        }
+
         h1 {
-            color: #ffffff;
-            font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 5px;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
         }
-        .sub-title {
-            font-size: 14px;
-            color: #a0aec0;
-            margin-bottom: 20px;
+
+        .sub-heading {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 24px;
         }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #1e293b;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            color: #38bdf8;
+            margin-bottom: 24px;
+            gap: 8px;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #38bdf8;
+            border-radius: 50%;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
         #output-box {
             width: 100%;
-            height: 220px;
-            border: 2px solid #333333;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: 18px;
-            line-height: 1.6;
+            height: 260px;
+            background-color: #0f172a;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            font-size: 19px;
+            line-height: 1.7;
+            color: var(--text-main);
             resize: none;
             box-sizing: border-box;
-            margin-bottom: 20px;
-            background-color: #2d2d2d;
-            color: #ffffff;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
+
         #output-box:focus {
-            border-color: #ff9933;
             outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
         }
-        .actions {
+
+        .control-panel {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
             display: flex;
             gap: 12px;
-            justify-content: center;
         }
+
         button {
-            padding: 12px 24px;
+            padding: 14px 28px;
             font-size: 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
             font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-start { background-color: #10b981; color: #ffffff; }
-        .btn-start:hover { background-color: #059669; }
-        .btn-start:disabled { background-color: #4a5568; color: #a0aec0; cursor: not-allowed; }
-        
-        .btn-stop { background-color: #ef4444; color: #ffffff; }
-        .btn-stop:hover { background-color: #dc2626; }
-        .btn-stop:disabled { background-color: #4a5568; color: #a0aec0; cursor: not-allowed; }
-        
-        .btn-copy { background-color: #3b82f6; color: #ffffff; }
-        .btn-copy:hover { background-color: #2563eb; }
-        
-        .status-text {
-            margin-top: 18px;
-            font-size: 13px;
-            color: #a0aec0;
-            font-weight: 500;
+
+        .btn-start {
+            background-color: var(--success);
+            color: white;
         }
-        .info-tag {
-            background-color: #2a3441;
-            color: #93c5fd;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            display: inline-block;
-            margin-bottom: 15px;
-            line-height: 1.4;
+
+        .btn-start:hover:not(:disabled) {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-stop {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-copy {
+            background-color: #334155;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-copy:hover {
+            background-color: #475569;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-bar {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .visualizer {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 20px;
+        }
+
+        .bar {
+            width: 3px;
+            height: 4px;
+            background-color: var(--text-muted);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        .recording .bar {
+            background-color: var(--success);
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        .recording .bar:nth-child(2) { animation-delay: 0.15s; }
+        .recording .bar:nth-child(3) { animation-delay: 0.3s; }
+        .recording .bar:nth-child(4) { animation-delay: 0.45s; }
+
+        @keyframes bounce {
+            from { height: 4px; }
+            to { height: 20px; }
         }
     </style>
 </head>
 <body>
 
-<div class="app-card">
+<div class="container">
     <h1>ଓଡ଼ିଆ Voice to Text</h1>
-    <div class="sub-title">Odianglish Transliteration Mode</div>
-    
-    <div class="info-tag">💡 Speak mixed Odia-English sentences naturally (e.g. "give me your truck", "namaskar")!</div>
-    
-    <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ କିମ୍ବା ଟାଇପ୍ କରନ୍ତୁ..."></textarea>
-    
-    <div class="actions">
-        <button class="btn-start" id="start-btn">Start Mic</button>
-        <button class="btn-stop" id="stop-btn" disabled>Stop Mic</button>
-        <button class="btn-copy" id="copy-btn">Copy Text</button>
+    <div class="sub-heading">Intelligent Web-Correction Engine</div>
+
+    <div class="badge">
+        <div class="badge-dot"></div>
+        <span>Live Cloud API Integration Active</span>
     </div>
-    
-    <div class="status-text" id="status">Ready. Click 'Start Mic'.</div>
+
+    <div class="textarea-wrapper">
+        <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ କିମ୍ବା ଟାଇପ୍ କରନ୍ତୁ..."></textarea>
+    </div>
+
+    <div class="control-panel">
+        <div class="btn-group">
+            <button class="btn-start" id="start-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v4M8 23h8"/></svg>
+                Start Mic
+            </button>
+            <button class="btn-stop" id="stop-btn" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="5" y="5" rx="2"/></svg>
+                Stop Mic
+            </button>
+        </div>
+        <button class="btn-copy" id="copy-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            Copy Text
+        </button>
+    </div>
+
+    <div class="status-bar">
+        <span id="status-text">System Status: Ready</span>
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // 📖 SMART MIXED DICTIONARY
-    // This translates complete spoken English words straight into smooth, natural Odia text sounds!
-    const OdianglishDictionary = {
-        // Your examples mapped to clean phonetic representations:
-        'give': 'ଗିଭ୍',
-        'me': 'ମି',
-        'your': 'ୟୋର',
-        'truck': 'ଟ୍ରକ',
-        'dont': 'ଡୋଣ୍ଟ',
-        'don\'t': 'ଡୋଣ୍ଟ',
-        'know': 'ନୋ',
-        'about': 'ଏବାଉଟ୍',
-        'apollo': 'ଅପୋଲୋ',
-        'community': 'କମ୍ୟୁନିଟି',
-        
-        // Odia base dictionary words:
-        'namaskar': 'ନମସ୍କାର',
-        'namaskara': 'ନମସ୍କାର',
-        'dhanyabad': 'ଧନ୍ୟବାଦ',
-        'kemiti': 'କେମିତି',
-        'achha': 'ଅଛନ୍ତି',
-        'acha': 'ଅଛ',
-        'odia': 'ଓଡ଼ିଆ',
-        'odisha': 'ଓଡ଼ିଶା',
-        'jay': 'ଜୟ',
-        'jagannath': 'ଜଗନ୍ନାଥ'
-    };
-
-    // Basic letter mapper for words that are not inside the word dictionary list
-    const LetterMap = {
-        'aa': 'ଆ', 'ee': 'ଈ', 'oo': 'ଊ', 'ai': 'ଐ', 'au': 'ଔ', 'kh': 'ଖ', 'gh': 'ଘ', 
-        'ch': 'ଛ', 'jh': 'ଝ', 'th': 'ଠ', 'dh': 'ଢ', 'ph': 'ଫ', 'bh': 'ଭ', 'sh': 'ଷ',
-        'a': 'ଅ', 'i': 'ଇ', 'u': 'ଉ', 'e': 'ଏ', 'o': 'ଓ', 'k': 'କ', 'g': 'ଗ', 'n': 'ନ', 
-        'c': 'ଚ', 'j': 'ଜ', 't': 'ଟ', 'd': 'ଡ', 'p': 'ପ', 'b': 'ବ', 'm': 'ମ', 'y': 'ୟ', 
-        'r': 'ର', 'l': 'ଲ', 'w': 'ୱ', 's': 'ସ', 'h': 'ହ', 'v': 'ଭ୍'
-    };
-
-    function processWord(word) {
-        if (!word) return "";
-        let cleanWord = word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").trim();
-        if (!cleanWord) return "";
-
-        // Rule 1: Check the whole word dictionary first (e.g. 'truck' -> 'ଟ୍ରକ')
-        if (OdianglishDictionary[cleanWord]) {
-            return OdianglishDictionary[cleanWord];
-        }
-
-        // Rule 2: Fallback to reading letter blocks if word is unknown
-        let result = "";
-        for (let i = 0; i < cleanWord.length; i++) {
-            let char = cleanWord[i];
-            let nextChar = cleanWord[i+1] || "";
-            let doubleChunk = char + nextChar;
-
-            if (LetterMap[doubleChunk]) {
-                result += LetterMap[doubleChunk];
-                i++; 
-            } else if (LetterMap[char]) {
-                result += LetterMap[char];
-            } else {
-                result += char;
-            }
-        }
-        return result;
-    }
-
     const startBtn = document.getElementById('start-btn');
     const stopBtn = document.getElementById('stop-btn');
     const copyBtn = document.getElementById('copy-btn');
     const outputBox = document.getElementById('output-box');
-    const status = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+    const visualizer = document.getElementById('visualizer');
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
-    let finalCommittedText = ""; 
+    let finalCommittedText = "";
+
+    // Comprehensive Web-lookup engine function
+    async function cleanAndTransliterate(rawWord) {
+        if (!rawWord) return "";
+        
+        // Isolate punctuation marks to restore them post-lookup
+        const matchPunctuation = rawWord.match(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g);
+        let cleanWord = rawWord.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+        
+        if (!cleanWord) return rawWord;
+        if (!/[a-zA-Z]/.test(cleanWord)) return rawWord;
+
+        // Structured live lookup payload string construction
+        const targetEndpoint = `https://inputtools.google.com/request?text=${encodeURIComponent(cleanWord)}&itc=or-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=demopage`;
+
+        try {
+            const fetchPromise = await fetch(targetEndpoint);
+            if (!fetchPromise.ok) throw new Error("Network validation rejected");
+            
+            const payloadStructure = await fetchPromise.json();
+            if (payloadStructure && payloadStructure[0] === "SUCCESS" && payloadStructure[1][0][1][0]) {
+                let resolvedTarget = payloadStructure[1][0][1][0];
+                if (matchPunctuation) resolvedTarget += matchPunctuation.join("");
+                return resolvedTarget;
+            }
+        } catch (exception) {
+            console.warn("Fallback path applied. Context tracing:", exception);
+        }
+        return rawWord;
+    }
+
+    async function processSentenceBlocks(sentenceString) {
+        if (!sentenceString) return "";
+        const tokenArray = sentenceString.split(/\s+/);
+        const processingQueue = tokenArray.map(token => cleanAndTransliterate(token));
+        const completedTokens = await Promise.all(processingQueue);
+        return completedTokens.join(" ");
+    }
 
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        
-        // 🌟 CRUCIAL: We listen using Indian English context so Chrome registers exact words like "truck" or "about"
-        recognition.lang = 'en-IN'; 
+        recognition.lang = 'en-IN'; // Indian-English context captures phonetics cleanly
 
         recognition.onstart = () => {
-            status.textContent = "🎙️ Listening... Speak mixed Odia/English sentences.";
+            statusText.textContent = "System Status: Listening actively...";
+            visualizer.classList.add('recording');
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            finalCommittedText = outputBox.value; 
+            finalCommittedText = outputBox.value;
         };
 
-        recognition.onerror = (e) => {
-            status.textContent = "Status: Listening paused.";
+        recognition.onerror = (event) => {
+            console.error("Speech structural interrupt:", event.error);
+            statusText.textContent = "System Status: Input idle.";
             stopBtn.click();
         };
 
         recognition.onend = () => {
-            status.textContent = "Mic turned off.";
+            statusText.textContent = "System Status: Microphone deactivated.";
+            visualizer.classList.remove('recording');
             startBtn.disabled = false;
             stopBtn.disabled = true;
         };
 
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            let newFinalText = '';
+        recognition.onresult = async (event) => {
+            let interimBuffer = '';
+            let finalBuffer = '';
 
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                let textChunk = event.results[i][0].transcript;
+                const transcriptSegment = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    newFinalText += textChunk;
+                    finalBuffer += transcriptSegment;
                 } else {
-                    interimTranscript += textChunk;
+                    interimBuffer += transcriptSegment;
                 }
             }
 
-            if (newFinalText !== '') {
-                let cleanFinal = processSentence(newFinalText);
-                finalCommittedText += cleanFinal + " ";
+            if (finalBuffer !== '') {
+                const transformedFinal = await processSentenceBlocks(finalBuffer);
+                finalCommittedText += transformedFinal + " ";
             }
 
-            let cleanInterim = processSentence(interimTranscript);
-            outputBox.value = finalCommittedText + cleanInterim;
+            const transformedInterim = await processSentenceBlocks(interimBuffer);
+            outputBox.value = finalCommittedText + transformedInterim;
         };
     } else {
-        status.textContent = "Voice input requires Google Chrome or Microsoft Edge.";
+        statusText.textContent = "System Error: Platform rendering incompatibility.";
     }
 
-    function processSentence(sentence) {
-        if (!sentence) return "";
-        let tokens = sentence.split(/\s+/);
-        let convertedTokens = tokens.map(token => processWord(token));
-        return convertedTokens.join(" ");
-    }
+    // Capture Manual Typing Space Intercepts
+    outputBox.addEventListener('keydown', async (event) => {
+        if (event.key === ' ') {
+            const indexMark = outputBox.selectionStart;
+            const absoluteText = outputBox.value;
 
-    // Manual Keyboard Converter configuration
-    outputBox.addEventListener('keydown', (e) => {
-        if (e.key === ' ') {
-            let cursorPosition = outputBox.selectionStart;
-            let currentText = outputBox.value;
+            const preCursorBlock = absoluteText.substring(0, indexMark);
+            const blockTokens = preCursorBlock.split(/\s+/);
+            const targetedToken = blockTokens[blockTokens.length - 1];
 
-            let textBeforeCursor = currentText.substring(0, cursorPosition);
-            let tokens = textBeforeCursor.split(/\s+/);
-            let lastToken = tokens[tokens.length - 1];
-
-            if (/^[a-zA-Z']+$/.test(lastToken.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,""))) {
-                let convertedWord = processWord(lastToken);
+            if (/^[a-zA-Z.,\/#!$%\^&\*;:{}=\-_`~()?]+$/.test(targetedToken)) {
+                event.preventDefault();
                 
-                let startOfWordIdx = textBeforeCursor.lastIndexOf(lastToken);
-                let updatedTextBefore = currentText.substring(0, startOfWordIdx) + convertedWord;
-                let textAfterCursor = currentText.substring(cursorPosition);
+                const verifiedTargetWord = await cleanAndTransliterate(targetedToken);
+                const tokenTargetOffset = preCursorBlock.lastIndexOf(targetedToken);
+                
+                const leadingString = absoluteText.substring(0, tokenTargetOffset) + verifiedTargetWord;
+                const trailingString = absoluteText.substring(indexMark);
 
-                e.preventDefault(); 
-                outputBox.value = updatedTextBefore + " " + textAfterCursor;
-                let newCursorPos = updatedTextBefore.length + 1;
-                outputBox.setSelectionRange(newCursorPos, newCursorPos);
+                outputBox.value = leadingString + " " + trailingString;
+                const cursorResetOffset = leadingString.length + 1;
+                outputBox.setSelectionRange(cursorResetOffset, cursorResetOffset);
             }
         }
     });
 
-    startBtn.addEventListener('click', () => {
-        if(recognition) recognition.start();
-    });
-
-    stopBtn.addEventListener('click', () => {
-        if(recognition) recognition.stop();
-    });
+    startBtn.addEventListener('click', () => recognition && recognition.start());
+    stopBtn.addEventListener('click', () => recognition && recognition.stop());
 
     copyBtn.addEventListener('click', () => {
         outputBox.select();
         navigator.clipboard.writeText(outputBox.value);
-        const originalStatus = status.textContent;
-        status.textContent = "Copied to clipboard! 📋";
-        setTimeout(() => status.textContent = originalStatus, 2000);
+        const baselineStatus = statusText.textContent;
+        statusText.textContent = "Success: Clipboard updated! 📋";
+        setTimeout(() => statusText.textContent = baselineStatus, 2500);
     });
 </script>
 
