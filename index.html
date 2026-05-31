@@ -22,7 +22,7 @@
             width: 100%;
             max-width: 550px;
             text-align: center;
-            border-top: 5px solid #ff9933; /* Indian Saffron Accent */
+            border-top: 5px solid #ff9933;
         }
         h1 {
             color: #1a365d;
@@ -67,7 +67,7 @@
             transition: all 0.2s;
             font-weight: 600;
         }
-        .btn-start { background-color: #138808; color: white; } /* Green */
+        .btn-start { background-color: #138808; color: white; }
         .btn-start:hover { background-color: #0f6c06; }
         .btn-start:disabled { background-color: #cbd5e0; cursor: not-allowed; }
         
@@ -75,7 +75,7 @@
         .btn-stop:hover { background-color: #c53030; }
         .btn-stop:disabled { background-color: #cbd5e0; cursor: not-allowed; }
         
-        .btn-copy { background-color: #000080; color: white; } /* Navy Blue */
+        .btn-copy { background-color: #000080; color: white; }
         .btn-copy:hover { background-color: #00005a; }
         
         .status-text {
@@ -102,7 +102,7 @@
     <h1>ଓଡ଼ିଆ Voice to Text</h1>
     <div class="sub-title">100% Free Public Utility App</div>
     
-    <div class="info-tag">💡 You can speak in Odia, or type in English/Hinglish spelling to get Odia letters!</div>
+    <div class="info-tag">💡 Speak in Odia, or type using English letters (like namaskar) to get Odia font!</div>
     
     <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ କିମ୍ବା ଟାଇପ୍ କରନ୍ତୁ... (Click Start to speak)"></textarea>
     
@@ -122,7 +122,7 @@
     const outputBox = document.getElementById('output-box');
     const status = document.getElementById('status');
 
-    // Setup the Free Browser Engine Core
+    // Setup the Free Browser Speech Engine
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -130,8 +130,6 @@
         recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        
-        // We set to 'or-IN' for native recognition, but if it fails, our fallback translator catches it
         recognition.lang = 'or-IN'; 
 
         recognition.onstart = () => {
@@ -157,41 +155,40 @@
                 fullTranscript += event.results[i][0].transcript;
             }
             
-            // Check if text is written in english letters, if so, convert it automatically to beautiful Odia script
+            // Convert any english phonetics into clear Odia script
             let cleanOdiaText = convertToOdiaScript(fullTranscript);
             outputBox.value = cleanOdiaText;
         };
     } else {
-        status.textContent = "Direct microphone voice input requires Google Chrome or Microsoft Edge.";
+        status.textContent = "Voice input requires Google Chrome or Microsoft Edge.";
     }
 
-    // 🌟 THE TRANSLITERATION ENGINE (Converts phonetics directly into Odia font characters)
+    // THE FREE TRANSLITERATION MAPPING ENGINE
     function convertToOdiaScript(text) {
         if (!text) return "";
         
-        // If the text is already captured natively in Odia by the browser, leave it as is
+        // If the browser captures actual Odia Unicode characters directly, keep them
         if (/[\u0B00-\u0B7F]/.test(text)) {
             return text;
         }
 
-        // Clean up common English phonetic spelling styles to sound matching Oriya rules
+        // Adjust common phonetic patterns to match Odia letter structures
         let workingText = text.toLowerCase()
             .replace(/sh/g, 'ś')
             .replace(/ch/g, 'c')
             .replace(/ee/g, 'ī')
             .replace(/oo/g, 'ū')
-            .replace(/o/g, 'a') // standardizing character vowels
+            .replace(/o/g, 'a') 
             .replace(/aa/g, 'ā');
 
         try {
-            // Converts it instantly into standard Odia script blocks for free
             return Sanscript.t(workingText, 'itrans', 'oriya');
         } catch(err) {
             return text; 
         }
     }
 
-    // Typing back-up backup feature: If the microphone drops, users can type "namaskar" and hit space, it turns to ଓଡ଼ିଆ
+    // Backup Typing System: If the user types in English spelling, automatically convert it on spacebar click
     outputBox.addEventListener('input', (e) => {
         let words = outputBox.value.split(" ");
         let correctedWords = words.map(word => {
@@ -207,7 +204,7 @@
         if(recognition) {
             recognition.start();
         } else {
-            status.textContent = "Mic input unsupported on this browser. You can type in phonetic English to generate Odia text!";
+            status.textContent = "Mic input unsupported on this browser. You can type text manually!";
         }
     });
 
