@@ -1,141 +1,169 @@
 :root {
-    --bg-main: #09090b;
-    --panel-bg: rgba(20, 20, 25, 0.6);
-    --panel-border: rgba(255, 255, 255, 0.06);
+    --bg-main: #060608;
+    --panel-bg: rgba(10, 10, 12, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.05);
     
     --text-primary: #f4f4f5;
-    --text-muted: #71717a;
-    --text-interim: #a1a1aa;
+    --text-muted: #52525b;
+    --text-interim: #00ffcc;
     
-    --accent-primary: #3b82f6;
-    --accent-glow: rgba(59, 130, 246, 0.3);
-    --accent-danger: #ef4444;
-    --danger-glow: rgba(239, 68, 68, 0.3);
+    --accent-primary: #00ffcc;
+    --accent-glow: rgba(0, 255, 204, 0.2);
+    --accent-danger: #ff4444;
+    --danger-glow: rgba(255, 68, 68, 0.2);
     
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --transition-snappy: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     background-color: var(--bg-main);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 255, 204, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
     color: var(--text-primary);
     font-family: var(--font-sans);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
-    overflow: hidden;
+    padding: 16px;
 }
 
 .app-container {
     width: 100%;
-    max-width: 720px;
+    max-width: 680px;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
-    border-radius: 24px;
-    padding: 40px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    padding: 32px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 24px;
 }
 
-.app-header {
-    text-align: left;
+.brand-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--accent-primary);
+    background: rgba(0, 255, 204, 0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(0, 255, 204, 0.15);
 }
 
 .app-title {
-    font-size: 1.75rem;
+    font-size: 2rem;
     font-weight: 700;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
 }
 
 .app-subtitle {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
+}
+
+.display-workspace {
+    position: relative;
+    width: 100%;
 }
 
 .output-canvas {
     width: 100%;
-    min-height: 240px;
-    max-height: 400px;
+    min-height: 280px;
+    max-height: 420px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 24px;
-    font-size: 1.1rem;
-    line-height: 1.7;
+    font-size: 1.2rem;
+    line-height: 1.8;
     white-space: pre-wrap;
     outline: none;
-    transition: var(--transition-smooth);
+    cursor: text;
+    transition: var(--transition-snappy);
 }
 
-.output-canvas:focus-within {
-    border-color: rgba(59, 130, 246, 0.3);
+/* Mobile-friendly active visual block when clicking into the textbox container */
+.output-canvas:focus {
+    border-color: rgba(0, 255, 204, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.05);
 }
 
 .output-canvas:empty::before {
-    content: "Initialize recognition system and begin speaking...";
-    color: rgba(255, 255, 255, 0.15);
-    font-style: italic;
+    content: "ଏଠାରେ କ୍ଲିକ୍ କରି କହିବା ଆରମ୍ଭ କରନ୍ତୁ...";
+    color: rgba(255, 255, 255, 0.12);
+    font-style: normal;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: var(--transition-snappy);
 }
 
 .controls-workspace {
     display: flex;
-    gap: 16px;
+    gap: 12px;
+    width: 100%;
 }
 
 .btn {
     font-family: var(--font-sans);
     font-size: 0.95rem;
     font-weight: 600;
-    padding: 16px 32px;
-    border-radius: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: var(--transition-smooth);
+    gap: 8px;
+    transition: var(--transition-snappy);
 }
 
 .btn-primary {
-    background: var(--accent-primary);
-    color: #ffffff;
-    box-shadow: 0 4px 20px var(--accent-glow);
-    flex-grow: 2;
+    background: #ffffff;
+    color: #000000;
+    flex-grow: 3;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-primary:hover {
-    background: #2563eb;
-    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.5);
+    background: #e4e4e7;
     transform: translateY(-1px);
 }
 
+/* Listening State Change */
 .btn-primary[data-state="listening"] {
     background: var(--accent-danger);
-    box-shadow: 0 4px 20px var(--danger-glow);
-}
-
-.btn-primary[data-state="listening"]:hover {
-    background: #dc2626;
-    box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+    color: #ffffff;
+    box-shadow: 0 8px 24px var(--danger-glow);
 }
 
 .btn-secondary {
@@ -147,24 +175,53 @@ body {
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-danger {
+    background: rgba(255, 68, 68, 0.05);
+    color: var(--accent-danger);
+    border: 1px solid rgba(255, 68, 68, 0.1);
+    flex-grow: 1;
+}
+
+.btn-danger:hover {
+    background: rgba(255, 68, 68, 0.15);
 }
 
 .btn:active {
-    transform: translateY(1px);
+    transform: translateY(1px) scale(0.98);
 }
 
-/* Custom modern scrollbar styles */
-.output-canvas::-webkit-scrollbar {
-    width: 6px;
+/* Interactive custom elements */
+.pulse-ring {
+    display: none;
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
 }
-.output-canvas::-webkit-scrollbar-track {
-    background: transparent;
+
+.btn-primary[data-state="listening"] .pulse-ring {
+    display: block;
+    animation: beacon 1.2s infinite ease-in-out;
 }
-.output-canvas::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+
+@keyframes beacon {
+    0% { transform: scale(0.8); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.4; }
+    100% { transform: scale(0.8); opacity: 1; }
 }
-.output-canvas::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+
+/* Custom Scrollbar */
+.output-canvas::-webkit-scrollbar { width: 5px; }
+.output-canvas::-webkit-scrollbar-track { background: transparent; }
+.output-canvas::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 99px; }
+
+@media (max-width: 480px) {
+    .app-container { padding: 20px; gap: 20px; }
+    .app-title { font-size: 1.6rem; }
+    .controls-workspace { flex-direction: row; flex-wrap: wrap; }
+    .btn-primary { width: 100%; order: 1; }
+    .btn-secondary { order: 2; flex-grow: 1; }
+    .btn-danger { order: 3; flex-grow: 1; }
 }
