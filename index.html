@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="or">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ଓଡ଼ିଆ Voice to Text</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .app-card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+        }
+        h1 {
+            color: #1a365d;
+            font-size: 26px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        #output-box {
+            width: 100%;
+            height: 220px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 18px;
+            line-height: 1.6;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            background-color: #f8fafc;
+            transition: border-color 0.2s;
+        }
+        #output-box:focus {
+            border-color: #3182ce;
+            outline: none;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .btn-start { background-color: #38a169; color: white; }
+        .btn-start:hover { background-color: #2f855a; }
+        .btn-start:disabled { background-color: #cbd5e0; cursor: not-allowed; }
+        
+        .btn-stop { background-color: #e53e3e; color: white; }
+        .btn-stop:hover { background-color: #c53030; }
+        .btn-stop:disabled { background-color: #cbd5e0; cursor: not-allowed; }
+        
+        .btn-copy { background-color: #3182ce; color: white; }
+        .btn-copy:hover { background-color: #2b6cb0; }
+        
+        .status-text {
+            margin-top: 18px;
+            font-size: 14px;
+            color: #718096;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h1>ଓଡ଼ିଆ Voice to Text</h1>
+    <textarea id="output-box" placeholder="ଏଠାରେ କ୍ଲିକ୍ କରି କୁହନ୍ତୁ, ଆପେ ଆପେ ଟାଇପ୍ ହେବ... (Click start and speak...)"></textarea>
+    
+    <div class="actions">
+        <button class="btn-start" id="start-btn">Start</button>
+        <button class="btn-stop" id="stop-btn" disabled>Stop</button>
+        <button class="btn-copy" id="copy-btn">Copy Text</button>
+    </div>
+    
+    <div class="status-text" id="status">Click "Start" and grant microphone access to begin.</div>
+</div>
+
+<script>
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const outputBox = document.getElementById('output-box');
+    const status = document.getElementById('status');
+
+    // Check browser compatibility
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        status.textContent = "Your browser doesn't support speech recognition. Please try Google Chrome or Microsoft Edge.";
+        startBtn.disabled = true;
+    } else {
+        const recognition = new SpeechRecognition();
+        
+        // Configuration for Odia
+        recognition.lang = 'or-IN'; 
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        let accumulatedString = '';
+
+        recognition.onstart = () => {
+            status.textContent = "Listening... କୁହନ୍ତୁ... 🎙️";
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        };
+
+        recognition.onerror = (event) => {
+            status.textContent = "Error occurred: " + event.error;
+            stopBtn.click();
+        };
+
+        recognition.onend = () => {
+            status.textContent = "Stopped listening. Process completed.";
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        };
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    accumulatedString += event.results[i][0].transcript + ' ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            outputBox.value = accumulatedString + interimTranscript;
+        };
+
+        startBtn.addEventListener('click', () => {
+            accumulatedString = outputBox.value ? outputBox.value + ' ' : '';
+            recognition.start();
+        });
+
+        stopBtn.addEventListener('click', () => {
+            recognition.stop();
+        });
+
+        copyBtn.addEventListener('click', () => {
+            outputBox.select();
+            navigator.clipboard.writeText(outputBox.value);
+            const savedStatus = status.textContent;
+            status.textContent = "Copied to clipboard! ✅";
+            setTimeout(() => status.textContent = savedStatus, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
