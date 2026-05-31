@@ -43,6 +43,12 @@ export class GroqSpeechEngine {
         const formData = new FormData();
         formData.append('file', audioBlob, 'audio.webm');
         formData.append('model', 'whisper-large-v3');
+        
+        /* SCRIPT FIXED: We pass a string written completely in native Odia alphabet.
+          This primes Whisper's tokenizer to force native script mapping instead of Devanagari.
+        */
+        formData.append('prompt', 'ଓଡ଼ିଆ ଭାଷା, ଓଡ଼ିଶା, ମୁଁ ଓଡ଼ିଆରେ କଥା ହେଉଛି।');
+        
         formData.append('temperature', '0.0');
 
         const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
