@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ଓଡ଼ିଆ ଫ୍ରି Voice-to-Text (Dark Mode)</title>
+    <title>ଓଡ଼ିଆ ଫ୍ରି Voice-to-Text (Self-Contained)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; /* Dark Mode Background */
+            background-color: #121212;
             color: #e0e0e0;
             display: flex;
             justify-content: center;
@@ -16,14 +16,14 @@
             margin: 0;
         }
         .app-card {
-            background-color: #1e1e1e; /* Deep Card Background */
+            background-color: #1e1e1e;
             padding: 30px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
             width: 100%;
             max-width: 550px;
             text-align: center;
-            border-top: 5px solid #ff9933; /* Neon Orange Top Border */
+            border-top: 5px solid #ff9933;
         }
         h1 {
             color: #ffffff;
@@ -47,7 +47,7 @@
             resize: none;
             box-sizing: border-box;
             margin-bottom: 20px;
-            background-color: #2d2d2d; /* Dark Input Field */
+            background-color: #2d2d2d;
             color: #ffffff;
             transition: border-color 0.2s;
         }
@@ -69,15 +69,15 @@
             transition: all 0.2s;
             font-weight: 600;
         }
-        .btn-start { background-color: #10b981; color: #ffffff; } /* Electric Green */
+        .btn-start { background-color: #10b981; color: #ffffff; }
         .btn-start:hover { background-color: #059669; }
         .btn-start:disabled { background-color: #4a5568; color: #a0aec0; cursor: not-allowed; }
         
-        .btn-stop { background-color: #ef4444; color: #ffffff; } /* Crimson Red */
+        .btn-stop { background-color: #ef4444; color: #ffffff; }
         .btn-stop:hover { background-color: #dc2626; }
         .btn-stop:disabled { background-color: #4a5568; color: #a0aec0; cursor: not-allowed; }
         
-        .btn-copy { background-color: #3b82f6; color: #ffffff; } /* Bright Blue */
+        .btn-copy { background-color: #3b82f6; color: #ffffff; }
         .btn-copy:hover { background-color: #2563eb; }
         
         .status-text {
@@ -87,7 +87,7 @@
             font-weight: 500;
         }
         .info-tag {
-            background-color: #2a3441; /* Muted Blue-Gray Tag */
+            background-color: #2a3441;
             color: #93c5fd;
             padding: 8px 14px;
             border-radius: 20px;
@@ -97,7 +97,6 @@
             line-height: 1.4;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sanscript@1.0.0/sanscript.min.js"></script>
 </head>
 <body>
 
@@ -119,6 +118,44 @@
 </div>
 
 <script>
+    // 🌟 BUILT-IN LIGHTWEIGHT TRANSLITERATION ENGINE (Replaces external CDN library dependency)
+    const OdiaPhoneticMap = {
+        'a': 'ଅ', 'aa': 'ଆ', 'i': 'ଇ', 'ee': 'ଈ', 'u': 'ଉ', 'oo': 'ଊ', 'e': 'ଏ', 'ai': 'ଐ', 'o': 'ଓ', 'au': 'ଔ',
+        'k': 'କ', 'kh': 'ଖ', 'g': 'ଗ', 'gh': 'ଘ', 'n': 'ଙ',
+        'c': 'ଚ', 'ch': 'ଛ', 'j': 'ଜ', 'jh': 'ଝ',
+        't': 'ଟ', 'th': 'ଠ', 'd': 'ଡ', 'dh': 'ଢ',
+        'p': 'ପ', 'ph': 'ଫ', 'b': 'ବ', 'bh': 'ଭ', 'm': 'ମ',
+        'y': 'ଯ', 'r': 'ର', 'l': 'ଲ', 'w': 'ୱ', 'ś': 'ଶ', 'sh': 'ଷ', 's': 'ସ', 'h': 'ହ',
+        'ks': 'କ୍ଷ', 'gy': 'ଜ୍ଞ', 'mng': 'ଂ', 'ah': 'ଃ', '敲': 'ଁ'
+    };
+
+    function transliterateToOdia(text) {
+        if (!text) return "";
+        if (/[\u0B00-\u0B7F]/.test(text)) return text; // If already natively in Odia, don't modify it
+
+        let clean = text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").trim();
+        
+        // Match multi-character phonetic spellings first, then single characters
+        let rules = ['sh', 'kh', 'gh', 'ch', 'jh', 'th', 'dh', 'bh', 'ks', 'gy', 'aa', 'ee', 'oo', 'ai', 'au', 'mng', 'ah'];
+        let result = clean;
+
+        rules.forEach(rule => {
+            if (OdiaPhoneticMap[rule]) {
+                let regex = new RegExp(rule, 'g');
+                result = result.replace(regex, OdiaPhoneticMap[rule]);
+            }
+        });
+
+        // Resolve single letters remaining
+        for (let key in OdiaPhoneticMap) {
+            if (key.length === 1) {
+                let regex = new RegExp(key, 'g');
+                result = result.replace(regex, OdiaPhoneticMap[key]);
+            }
+        }
+        return result;
+    }
+
     const startBtn = document.getElementById('start-btn');
     const stopBtn = document.getElementById('stop-btn');
     const copyBtn = document.getElementById('copy-btn');
@@ -181,35 +218,11 @@
     function processSentenceToOdia(sentence) {
         if (!sentence) return "";
         let tokens = sentence.split(/\s+/);
-        let convertedTokens = tokens.map(token => convertWordToOdia(token));
+        let convertedTokens = tokens.map(token => transliterateToOdia(token));
         return convertedTokens.join(" ");
     }
 
-    function convertWordToOdia(word) {
-        if (!word) return "";
-        if (/[\u0B00-\u0B7F]/.test(word)) {
-            return word;
-        }
-
-        let cleanWord = word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").trim();
-        if (!cleanWord) return "";
-
-        let workingText = cleanWord
-            .replace(/sh/g, 'ś')
-            .replace(/ch/g, 'c')
-            .replace(/ee/g, 'ī')
-            .replace(/oo/g, 'ū')
-            .replace(/aa/g, 'ā')
-            .replace(/o/g, 'a');
-
-        try {
-            return Sanscript.t(workingText, 'itrans', 'oriya');
-        } catch(err) {
-            return word; 
-        }
-    }
-
-    // Fixed typing system configuration
+    // Typing system tracking layout configurations
     outputBox.addEventListener('keydown', (e) => {
         if (e.key === ' ') {
             let cursorPosition = outputBox.selectionStart;
@@ -220,7 +233,7 @@
             let lastToken = tokens[tokens.length - 1];
 
             if (/^[a-zA-Z]+$/.test(lastToken.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,""))) {
-                let convertedWord = convertWordToOdia(lastToken);
+                let convertedWord = transliterateToOdia(lastToken);
                 
                 let startOfWordIdx = textBeforeCursor.lastIndexOf(lastToken);
                 let updatedTextBefore = currentText.substring(0, startOfWordIdx) + convertedWord;
