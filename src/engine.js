@@ -2,24 +2,23 @@ export class SpeechEngine {
     constructor(config = {}) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            throw new Error("Speech recognition interface missing from modern environment variables.");
+            throw new Error("Speech recognition pipeline unsupported in this client engine layout.");
         }
 
         this.recognition = new SpeechRecognition();
         this.isListening = false;
         
-        // Default Core Infrastructure Configs
-        this.recognition.continuous = config.continuous ?? true;
-        this.recognition.interimResults = config.interimResults ?? true;
-        this.recognition.lang = config.lang ?? 'en-US';
+        // Locked strictly into Odia Language Matrix
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'or-IN';
 
         this.finalTranscript = '';
         
-        // Clean Dictionary Conversions
+        // Phonetical Sanitize Rules for Odia String Sequences
         this.correctionMap = {
-            "clear cookies": "[Action: Flush Session]",
-            "dip shit": "my friend",
-            "bard": "Gemini"
+            "ହେଲୋ": "ନମସ୍କାର",
+            "ଗୁଗଲ": "Gemini"
         };
     }
 
@@ -46,7 +45,7 @@ export class SpeechEngine {
 
         this.recognition.onend = () => {
             if (this.isListening) {
-                // Auto-recovery connection line
+                // Persistent connection wrapper for background cuts
                 this.recognition.start();
             } else {
                 onEndCallback();
@@ -54,7 +53,8 @@ export class SpeechEngine {
         };
 
         this.recognition.onerror = (err) => {
-            console.error("Core Engine Event Level Fault:", err.error);
+            if(err.error === 'no-speech') return; // Silence non-critical logs
+            console.error("Internal API Level Matrix Fault:", err.error);
         };
     }
 
