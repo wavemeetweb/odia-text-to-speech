@@ -4,235 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice to Text Engine</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background: #0f0f12;
-            color: #e4e4ed;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            text-align: center;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 25px;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        #output {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 20px;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-            text-align: left;
-            line-height: 1.6;
-            font-size: 1.05rem;
-            white-space: pre-wrap;
-            margin-bottom: 25px;
-            color: #d1d1e0;
-        }
-
-        #output:empty::before {
-            content: "Click 'Start Listening' and speak into your microphone...";
-            color: #555566;
-            font-style: italic;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        button {
-            background: #3b82f6;
-            color: #ffffff;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-        }
-
-        button:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        button.listening {
-            background: #ef4444;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-
-        button.listening:hover {
-            background: #dc2626;
-        }
-
-        .clear-btn {
-            background: rgba(255, 255, 255, 0.05);
-            color: #a3a3c2;
-            box-shadow: none;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .clear-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>Speech to Text Engine</h2>
-    <div id="output"></div>
-    
-    <div class="controls">
-        <button id="actionBtn">Start Listening</button>
-        <button id="clearBtn" class="clear-btn">Clear Text</button>
-    </div>
-</div>
+    <main class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Speech to Text Engine</h1>
+            <p class="app-subtitle">Real-time voice recognition & phrase correction</p>
+        </header>
 
-<script>
-    // Verify Web Speech API browser availability
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-        document.getElementById('output').innerHTML = `<span style="color: #ef4444;">Error: Web Speech API is not supported in this browser. Please use a modern browser like Google Chrome or Microsoft Edge.</span>`;
-        document.getElementById('actionBtn').disabled = true;
-    } else {
-        const recognition = new SpeechRecognition();
+        <section class="display-workspace">
+            <div id="outputCanvas" class="output-canvas"></div>
+        </section>
         
-        // Runtime Settings
-        recognition.continuous = true;         // Prevents automatic cutoff when you pause speaking
-        recognition.interimResults = true;     // Enables processing text while actively speaking
-        recognition.lang = 'en-US';            // Define recognition language profile
+        <footer class="controls-workspace">
+            <button id="toggleRecordBtn" class="btn btn-primary" data-state="idle">
+                <span class="btn-icon"></span>
+                <span class="btn-text">Start Listening</span>
+            </button>
+            <button id="clearCanvasBtn" class="btn btn-secondary">
+                Clear Text
+            </button>
+        </footer>
+    </main>
 
-        const actionBtn = document.getElementById('actionBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const outputDiv = document.getElementById('output');
-        
-        let isListening = false;
-        let finalTranscript = '';
-
-        // Dynamic Text Replacement Rules
-        const correctionMap = {
-            "clear cookies": "[Action: Clear Cookies]",
-            "dip shit": "my friend",
-            "bard": "Gemini"
-        };
-
-        // Processes phrase corrections against active transcripts
-        function sanitizeText(text) {
-            let modifiedText = text;
-            Object.keys(correctionMap).forEach(phrase => {
-                const regex = new RegExp(`\\b${phrase}\\b`, 'gi');
-                modifiedText = modifiedText.replace(regex, correctionMap[phrase]);
-            });
-            return modifiedText;
-        }
-
-        // Stream and format spoken data
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + ' ';
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-
-            // Run transcripts through the cleanup utility mapping
-            const cleanFinal = sanitizeText(finalTranscript);
-            const cleanInterim = sanitizeText(interimTranscript);
-
-            // Output structured layout separating finalized text from real-time dynamic guesses
-            outputDiv.innerHTML = `<span>${cleanFinal}</span><span style="color: #71717a;">${cleanInterim}</span>`;
-            
-            // Auto scroll container downwards as more text populates
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-        };
-
-        // Click Handler for Speech Control Toggle
-        actionBtn.addEventListener('click', () => {
-            if (isListening) {
-                isListening = false; // Set to false first so onend logic knows it was intentional
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
-        });
-
-        // Click Handler to Clear Output Canvas
-        clearBtn.addEventListener('click', () => {
-            finalTranscript = '';
-            outputDiv.innerHTML = '';
-        });
-
-        recognition.onstart = () => {
-            isListening = true;
-            actionBtn.textContent = "Stop Listening";
-            actionBtn.classList.add('listening');
-        };
-
-        recognition.onend = () => {
-            // Restart audio loop if execution ended via an internal timeout drop instead of a stop click
-            if (isListening) {
-                recognition.start();
-            } else {
-                actionBtn.textContent = "Start Listening";
-                actionBtn.classList.remove('listening');
-            }
-        };
-
-        recognition.onerror = (event) => {
-            console.error("Speech Recognition Error Event:", event.error);
-            if (event.error === 'not-allowed') {
-                outputDiv.innerHTML = `<span style="color: #ef4444;">System Warning: Microphone authorization blocked. Please verify browser permissions.</span>`;
-                isListening = false;
-                actionBtn.textContent = "Start Listening";
-                actionBtn.classList.remove('listening');
-            }
-        };
-    }
-</script>
+    <script type="module" src="src/app.js"></script>
 </body>
 </html>
