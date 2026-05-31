@@ -1,4 +1,4 @@
-export class GroqSpeechEngine {
+export class SarvamSpeechEngine {
     constructor() {
         this.mediaRecorder = null;
         this.audioChunks = [];
@@ -8,6 +8,8 @@ export class GroqSpeechEngine {
     async startRecording() {
         this.audioChunks = [];
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // WebM container containing Opus audio data pipeline
         this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
         
         this.mediaRecorder.ondataavailable = (event) => {
@@ -27,7 +29,7 @@ export class GroqSpeechEngine {
                 this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
 
                 try {
-                    const transcribedText = await this._sendToGroq(audioBlob, apiKey);
+                    const transcribedText = await this._sendToSarvam(audioBlob, apiKey);
                     resolve(transcribedText);
                 } catch (err) {
                     reject(err);
@@ -39,30 +41,29 @@ export class GroqSpeechEngine {
         });
     }
 
-    async _sendToGroq(audioBlob, apiKey) {
+    async _sendToSarvam(audioBlob, apiKey) {
         const formData = new FormData();
-        formData.append('file', audioBlob, 'audio.webm');
-        formData.append('model', 'whisper-large-v3');
         
-        /* SCRIPT FIXED: We pass a string written completely in native Odia alphabet.
-          This primes Whisper's tokenizer to force native script mapping instead of Devanagari.
-        */
-        formData.append('prompt', 'ଓଡ଼ିଆ ଭାଷା, ଓଡ଼ିଶା, ମୁଁ ଓଡ଼ିଆରେ କଥା ହେଉଛି।');
-        
-        formData.append('temperature', '0.0');
+        // Target structural file requirements for Sarvam speech framework
+        formData.append('file', audioBlob, 'speech.wav');
+        formData.append('language_code', 'or-IN'); 
+        formData.append('model', 'saaras:v1');
 
-        const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        // Low-latency synchronous STT API pipeline
+        const response = await fetch('https://api.sarvam.ai/speech-to-text', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}` },
+            headers: { 
+                'api-subscription-key': apiKey
+            },
             body: formData
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || "Failed communicating with Groq.");
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP Error ${response.status}: Pipeline connection failure.`);
         }
 
         const data = await response.json();
-        return data.text;
+        return data.transcript || "";
     }
 }
