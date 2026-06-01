@@ -8,45 +8,43 @@ const clearBtn = document.getElementById('clear-btn');
 const textArea = document.getElementById('text-area');
 const statusIndicator = document.getElementById('status-indicator');
 
-// 🎤 INTERCEPTOR 1: LISTEN AND SPEAK TOGGLE TRACKER
+// 🎤 ACTION 1: CAPTURE AND TRANSMIT AUDIO PAYLOADS
 listenBtn.addEventListener('click', async () => {
     if (!engine.isRecording) {
         try {
             await engine.startRecording();
             
-            // UI Mutation: Change layout to active audio logging state
+            // Mutate layout components to Recording Mode
             listenBtn.innerText = "Stop";
-            listenBtn.style.borderColor = "#f43f5e"; // Glowing Rose Red
-            listenBtn.style.color = "#f43f5e";
+            listenBtn.style.borderColor = "#ef4444"; 
+            listenBtn.style.color = "#ef4444";
             statusIndicator.innerText = "LISTENING...";
-            statusIndicator.style.color = "#f43f5e";
+            statusIndicator.style.color = "#ef4444";
             
         } catch (error) {
-            textArea.placeholder = "Error: System could not acquire hardware microphone authorization.";
+            textArea.placeholder = "Error: System failed to claim active mic configuration pipeline.";
         }
     } else {
         try {
-            // UI Mutation: Shift to cloud computation loading layout
+            // Transition layout components to Cloud Evaluation State
             statusIndicator.innerText = "PROCESSING...";
-            statusIndicator.style.color = "#22d3ee"; // Cyber Cyan 
+            statusIndicator.style.color = "#22d3ee"; 
             listenBtn.innerText = "Listen";
             listenBtn.style.borderColor = ""; 
             listenBtn.style.color = "";
 
-            // Disconnect recording track and collect response data from Colab GPU
+            // Shut streaming layers down and receive response from T4 Cloud Engine
             const transcribedText = await engine.stopRecording();
-            
-            // Deliver complete string context to viewport textarea
             textArea.value = transcribedText;
             
-            // Revert state flags to default static system baseline
-            statusIndicator.innerText = "SYSTEM READY";
+            // Reset to clean operational state
+            statusIndicator.innerText = "System Ready";
             statusIndicator.style.color = ""; 
             
         } catch (error) {
-            textArea.value = "Error: Upstream pipeline interface failure. Verify Google Colab log matrix and active Ngrok URL connection.";
+            textArea.value = "Error: Connection lost with GPU cluster. Reverify active Colab ngrok tunnel parameters.";
             statusIndicator.innerText = "SERVER ERROR";
-            statusIndicator.style.color = "#f43f5e";
+            statusIndicator.style.color = "#ef4444";
             listenBtn.innerText = "Listen";
             listenBtn.style.borderColor = "";
             listenBtn.style.color = "";
@@ -54,27 +52,26 @@ listenBtn.addEventListener('click', async () => {
     }
 });
 
-// 📋 INTERCEPTOR 2: CLIPBOARD EXPORT TRUCKER
+// 📋 ACTION 2: COPIER BUFFER LAYER
 copyBtn.addEventListener('click', () => {
     if (textArea.value.trim() !== "" && !textArea.value.startsWith("Error:")) {
         navigator.clipboard.writeText(textArea.value);
         
-        // Brief asynchronous dashboard response message
-        const ancestralText = statusIndicator.innerText;
+        const baselineText = statusIndicator.innerText;
         statusIndicator.innerText = "COPIED TO CLIPBOARD!";
-        statusIndicator.style.color = "#10b981"; // Emerald green
+        statusIndicator.style.color = "#10b981"; // Emerald confirmation accent
         
         setTimeout(() => {
-            statusIndicator.innerText = ancestralText;
+            statusIndicator.innerText = baselineText;
             statusIndicator.style.color = "";
         }, 2000);
     }
 });
 
-// 🧹 INTERCEPTOR 3: TERMINAL FLUSH PIPELINE
+// 🧹 ACTION 3: CLEAR DATA PIPELINE
 clearBtn.addEventListener('click', () => {
     textArea.value = "";
     textArea.placeholder = "Initiate voice sequence...";
-    statusIndicator.innerText = "SYSTEM READY";
+    statusIndicator.innerText = "System Ready";
     statusIndicator.style.color = "";
 });
