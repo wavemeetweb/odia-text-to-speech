@@ -3,56 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odia Voice Engine (Sarvam AI)</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Odia Speech Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: radial-gradient(circle at top right, #141129 0%, #050508 100%);
+            min-height: 100vh;
+        }
+        .cyber-panel {
+            background: rgba(10, 10, 15, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .cyber-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cyber-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+        .cyber-btn:active {
+            transform: translateY(1px);
+        }
+    </style>
 </head>
-<body>
+<body class="flex items-center justify-center p-4 text-slate-100">
 
-    <div class="bg-orb bg-orb-1"></div>
-    <div class="bg-orb bg-orb-2"></div>
+    <div class="w-full max-w-2xl p-8 rounded-2xl cyber-panel shadow-2xl">
+        <div class="text-[10px] font-bold tracking-[0.25em] text-cyan-400 uppercase mb-2">
+            Sarwam Indic Core
+        </div>
 
-    <div id="configModal" class="modal-overlay">
-        <div class="glass-panel modal-card">
-            <div class="modal-header">
-                <h3>System Configuration</h3>
-                <p>Initialize Sarvam AI Subscription Key</p>
+        <div class="mb-6">
+            <h1 class="text-3xl font-medium tracking-tight text-slate-200">
+                ଓଡ଼ିଆ <span class="text-slate-500 font-light">Engine</span>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Low-latency localized speech infrastructure</p>
+        </div>
+
+        <div class="relative mb-6 rounded-xl bg-black/50 border border-white/5 p-5">
+            <textarea 
+                id="text-area" 
+                class="w-full h-44 bg-transparent text-slate-200 placeholder-slate-600 focus:outline-none resize-none font-light text-lg italic leading-relaxed"
+                placeholder="Initiate voice sequence..."
+                readonly
+            ></textarea>
+            
+            <div class="flex justify-end mt-2">
+                <span id="status-indicator" class="text-[10px] font-bold tracking-widest text-slate-600 uppercase transition-all duration-300">
+                    System Ready
+                </span>
             </div>
-            <div class="modal-body">
-                <input type="password" id="sarvamApiKey" class="glass-input" placeholder="Enter API subscription key...">
-            </div>
-            <div class="modal-footer">
-                <button id="saveKeyBtn" class="btn btn-glow">Save & Initialize</button>
-            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+            <button id="listen-btn" class="cyber-btn py-3 px-6 rounded-xl font-medium text-sm tracking-wide text-slate-300 outline-none">
+                Listen
+            </button>
+            <button id="copy-btn" class="cyber-btn py-3 px-6 rounded-xl font-medium text-sm tracking-wide text-slate-400 outline-none">
+                Copy
+            </button>
+            <button id="clear-btn" class="cyber-btn py-3 px-6 rounded-xl font-medium text-sm tracking-wide text-slate-500 outline-none">
+                Clear
+            </button>
         </div>
     </div>
 
-    <main class="glass-panel app-container">
-        <header class="app-header">
-            <div class="header-meta">
-                <div class="brand-badge">SARVAM INDIC CORE</div>
-                <button id="settingsBtn" class="icon-btn" aria-label="Settings">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
-            </div>
-            <h1 class="app-title">ଓଡ଼ିଆ <span>Engine</span></h1>
-            <p class="app-subtitle">Low-latency localized speech infrastructure</p>
-        </header>
-
-        <section class="display-workspace">
-            <div id="outputCanvas" class="glass-input output-canvas" tabIndex="0" role="textbox" aria-multiline="true"></div>
-            <div id="statusIndicator" class="status-indicator">SYSTEM READY</div>
-        </section>
-        
-        <footer class="controls-workspace">
-            <button id="toggleRecordBtn" class="btn btn-outline" data-state="idle">
-                <div class="pulse-ring"></div>
-                <span class="btn-text">Listen</span>
-            </button>
-            <button id="copyTextBtn" class="btn btn-ghost">Copy</button>
-            <button id="clearCanvasBtn" class="btn btn-ghost">Clear</button>
-        </footer>
-    </main>
-
-    <script type="module" src="src/app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
